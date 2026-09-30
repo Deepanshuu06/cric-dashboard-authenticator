@@ -23,7 +23,44 @@ const LICENSES = {
       'admin_dashboard_access'
     ],
     allowedDomains: ['*'],
-    contactSupport: 'support@iqbalsports.com'
+  },
+
+  // Client: CricTalks
+  'crictalks': {
+    clientName: 'CricTalks',
+    licensed: true, // 👈 Change to false to manually disable license
+    licenseKey: 'CRICTALKS-2026-PRO-4421',
+    plan: 'Pro Cricket Broadcast',
+    issuedDate: '2026-01-01',
+    expiryDate: '2027-01-01', // YYYY-MM-DD
+    features: [
+      'live_score_sync',
+      'commentary_feed',
+      'news_integration',
+      'social_sharing',
+      'admin_dashboard_access'
+    ],
+    allowedDomains: ['*'],
+    contactSupport: 'support@crictalks.com'
+  },
+
+  // Client: OpenPath
+  'openpath': {
+    clientName: 'OpenPath',
+    licensed: true, // 👈 Change to false to manually disable license
+    licenseKey: 'OPENPATH-2026-ENT-7732',
+    plan: 'Enterprise Analytics',
+    issuedDate: '2026-01-01',
+    expiryDate: '2027-01-01', // YYYY-MM-DD
+    features: [
+      'live_score_sync',
+      'realtime_analytics',
+      'custom_api_access',
+      'tournament_brackets',
+      'admin_dashboard_access'
+    ],
+    allowedDomains: ['*'],
+    contactSupport: 'support@openpath.com'
   },
 
   // Default / Demo license

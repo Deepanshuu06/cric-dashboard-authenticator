@@ -55,6 +55,34 @@ app.get('/iqbal-sports/raw', (req, res) => {
 });
 
 /**
+ * 3. Dedicated Route: /crictalks
+ */
+app.get('/crictalks', (req, res) => {
+  const licenseInfo = evaluateLicense('crictalks');
+  res.json(licenseInfo);
+});
+
+app.get('/crictalks/raw', (req, res) => {
+  const licenseInfo = evaluateLicense('crictalks');
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(licenseInfo.isValid ? 'true' : 'false');
+});
+
+/**
+ * 4. Dedicated Route: /openpath
+ */
+app.get('/openpath', (req, res) => {
+  const licenseInfo = evaluateLicense('openpath');
+  res.json(licenseInfo);
+});
+
+app.get('/openpath/raw', (req, res) => {
+  const licenseInfo = evaluateLicense('openpath');
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(licenseInfo.isValid ? 'true' : 'false');
+});
+
+/**
  * 4. General / Backward-Compatible Route: /license
  * Evaluates default license
  */
@@ -107,7 +135,8 @@ if (require.main === module) {
     console.log(`🚀 Cric Dashboard Authenticator is running on port ${PORT}`);
     console.log(`👉 Default Route:   http://localhost:${PORT}/`);
     console.log(`👉 Iqbal Sports:    http://localhost:${PORT}/iqbal-sports`);
-    console.log(`👉 Iqbal Raw Check: http://localhost:${PORT}/iqbal-sports/raw`);
+    console.log(`👉 CricTalks:       http://localhost:${PORT}/crictalks`);
+    console.log(`👉 OpenPath:        http://localhost:${PORT}/openpath`);
     console.log(`👉 Health Check:    http://localhost:${PORT}/health`);
   });
 }

@@ -74,11 +74,28 @@ curl http://localhost:3000/iqbal-sports
 
 ---
 
-### 3. Raw Boolean Route (`/iqbal-sports/raw`)
-Returns plain text `true` or `false` based on `isValid`. Perfect for quick one-line checks in your dashboard code:
+### 3. CricTalks Route (`/crictalks`)
+```bash
+curl http://localhost:3000/crictalks
+```
+* **Raw Check**: `curl http://localhost:3000/crictalks/raw` (returns `true` or `false`)
+
+---
+
+### 4. OpenPath Route (`/openpath`)
+```bash
+curl http://localhost:3000/openpath
+```
+* **Raw Check**: `curl http://localhost:3000/openpath/raw` (returns `true` or `false`)
+
+---
+
+### 5. Raw Boolean Endpoints (Quick Check)
+Every client has a `/raw` endpoint that returns plain text `true` or `false` based on `isValid`. Perfect for quick one-line checks in your dashboard code:
 ```bash
 curl http://localhost:3000/iqbal-sports/raw
-# Output: true
+curl http://localhost:3000/crictalks/raw
+curl http://localhost:3000/openpath/raw
 ```
 
 ---
