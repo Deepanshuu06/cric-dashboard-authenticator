@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { LICENSES, evaluateLicense } = require('./licenses');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,60 +10,87 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ==============================================================================
-// ⚙️ LICENSE SETTING: Set to `true` or `false`
-// ==============================================================================
-// You can directly change this variable below:
-const DEFAULT_IS_LICENSED = true;
-
-/**
- * Returns current license state.
- * Uses environment variable IS_LICENSED if provided, otherwise DEFAULT_IS_LICENSED.
- */
-function checkLicense() {
-  if (process.env.IS_LICENSED !== undefined) {
-    return process.env.IS_LICENSED.trim().toLowerCase() === 'true';
-  }
-  return DEFAULT_IS_LICENSED;
-}
-
 // ------------------------------------------------------------------------------
 // Routes
 // ------------------------------------------------------------------------------
 
-// Root route: Overview & quick check
+/**
+ * 1. Default Route: /
+ * Returns normal service data and available client routes.
+ */
 app.get('/', (req, res) => {
-  const licensed = checkLicense();
   res.json({
-    service: 'Cric Dashboard Authenticator',
-    licensed: licensed,
-    endpoints: {
-      license: '/license',
-      rawBoolean: '/license/raw',
-      health: '/health'
-    }
+    service: 'Cric Dashboard Authenticator API',
+    status: 'ONLINE',
+    version: '1.1.0',
+    message: 'Authentication & license verification service is running normally.',
+    serverTime: new Date().toISOString(),
+    availableClients: Object.keys(LICENSES).map(slug => ({
+      name: LICENSES[slug].clientName,
+      slug: slug,
+      url: `/${slug}`,
+      rawUrl: `/${slug}/raw`
+    })),
+    healthCheck: '/health'
   });
 });
 
-// Primary license check route: JSON format
-app.get('/license', (req, res) => {
-  const licensed = checkLicense();
-  res.json({
-    licensed: licensed,
-    status: licensed ? 'ACTIVE' : 'INACTIVE',
-    message: licensed ? 'License is verified and active.' : 'License is inactive or expired.',
-    timestamp: new Date().toISOString()
-  });
+/**
+ * 2. Dedicated Route: /iqbal-sports
+ * Returns full license details for Iqbal Sports
+ */
+app.get('/iqbal-sports', (req, res) => {
+  const licenseInfo = evaluateLicense('iqbal-sports');
+  res.json(licenseInfo);
 });
 
-// Raw route: Returns plain true or false as string
-app.get('/license/raw', (req, res) => {
-  const licensed = checkLicense();
+/**
+ * 3. Dedicated Raw Boolean Route: /iqbal-sports/raw
+ * Returns plain text 'true' or 'false'
+ */
+app.get('/iqbal-sports/raw', (req, res) => {
+  const licenseInfo = evaluateLicense('iqbal-sports');
   res.setHeader('Content-Type', 'text/plain');
-  res.send(licensed ? 'true' : 'false');
+  res.send(licenseInfo.isValid ? 'true' : 'false');
 });
 
-// Health check / Keep-Alive route (used by UptimeRobot / cron pingers)
+/**
+ * 4. General / Backward-Compatible Route: /license
+ * Evaluates default license
+ */
+app.get('/license', (req, res) => {
+  const licenseInfo = evaluateLicense('default');
+  res.json(licenseInfo);
+});
+
+app.get('/license/raw', (req, res) => {
+  const licenseInfo = evaluateLicense('default');
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(licenseInfo.isValid ? 'true' : 'false');
+});
+
+/**
+ * 5. Dynamic Client Route: /client/:slug
+ * Allows adding any new client into licenses.js and fetching it immediately
+ */
+app.get('/client/:slug', (req, res) => {
+  const slug = req.params.slug.toLowerCase().trim();
+  const licenseInfo = evaluateLicense(slug);
+
+  if (!licenseInfo) {
+    return res.status(404).json({
+      error: 'Client not found',
+      message: `No license record found for client '${slug}'. Please add it to licenses.js.`,
+      availableClients: Object.keys(LICENSES)
+    });
+  }
+
+  res.json(licenseInfo);
+});
+
+/**
+ * 6. Health Check / Keep-Alive Route (used by UptimeRobot / cron pingers)
+ */
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -77,8 +105,10 @@ app.get('/health', (req, res) => {
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Cric Dashboard Authenticator is running on port ${PORT}`);
-    console.log(`🔑 Current License Status: ${checkLicense() ? 'LICENSED (true)' : 'UNLICENSED (false)'}`);
-    console.log(`👉 Test endpoint: http://localhost:${PORT}/license`);
+    console.log(`👉 Default Route:   http://localhost:${PORT}/`);
+    console.log(`👉 Iqbal Sports:    http://localhost:${PORT}/iqbal-sports`);
+    console.log(`👉 Iqbal Raw Check: http://localhost:${PORT}/iqbal-sports/raw`);
+    console.log(`👉 Health Check:    http://localhost:${PORT}/health`);
   });
 }
 

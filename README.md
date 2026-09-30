@@ -1,121 +1,159 @@
 # Cric Dashboard Authenticator 🏏
 
-A lightweight Node.js API service designed to verify license status for your application or dashboard.
+A modular Node.js API service designed to verify multi-client license validity, issue dates, expiry dates, remaining days, and feature access for your cricket dashboards.
 
 ---
 
 ## 🚀 API Endpoints
 
-| Endpoint | Method | Output | Description |
-| :--- | :---: | :--- | :--- |
-| `/license` | `GET` | JSON | Returns `{ "licensed": true/false, "status": "ACTIVE"/"INACTIVE", "message": "...", "timestamp": "..." }` |
-| `/license/raw` | `GET` | Plain Text | Returns `true` or `false` (ideal for lightweight string checks) |
-| `/health` | `GET` | JSON | Returns `{ "status": "ok", "uptimeSeconds": ... }` (used by keep-alive pingers) |
-| `/` | `GET` | JSON | Service overview and available endpoints |
+### 1. Default Overview (`/`)
+Returns standard service health and registered client routes:
+```bash
+curl http://localhost:3000/
+```
+```json
+{
+  "service": "Cric Dashboard Authenticator API",
+  "status": "ONLINE",
+  "version": "1.1.0",
+  "message": "Authentication & license verification service is running normally.",
+  "serverTime": "2026-10-01T05:25:00.000Z",
+  "availableClients": [
+    {
+      "name": "Iqbal Sports",
+      "slug": "iqbal-sports",
+      "url": "/iqbal-sports",
+      "rawUrl": "/iqbal-sports/raw"
+    },
+    {
+      "name": "Standard Cric Client",
+      "slug": "default",
+      "url": "/default",
+      "rawUrl": "/default/raw"
+    }
+  ],
+  "healthCheck": "/health"
+}
+```
 
 ---
 
-## ⚙️ How to Change the License (`true` or `false`)
+### 2. Iqbal Sports Route (`/iqbal-sports`)
+Full license verification response:
+```bash
+curl http://localhost:3000/iqbal-sports
+```
+```json
+{
+  "client": "Iqbal Sports",
+  "slug": "iqbal-sports",
+  "licensed": true,
+  "isValid": true,
+  "status": "ACTIVE",
+  "message": "License is valid and active.",
+  "licenseKey": "IQBAL-SPORTS-2026-PRO-9811",
+  "plan": "Pro Enterprise Annual",
+  "issuedDate": "2026-01-01",
+  "expiryDate": "2027-01-01",
+  "daysRemaining": 94,
+  "features": [
+    "live_score_sync",
+    "tournament_management",
+    "commentary_feed",
+    "player_profiles",
+    "team_rankings",
+    "admin_dashboard_access"
+  ],
+  "allowedDomains": [
+    "*"
+  ],
+  "supportContact": "support@iqbalsports.com",
+  "checkedAt": "2026-10-01T05:25:00.000Z"
+}
+```
 
-You have two easy ways to change the license status:
+---
 
-### Method 1: Directly in Code (`server.js`)
-Open [server.js](file:///server.js) and update line 16:
+### 3. Raw Boolean Route (`/iqbal-sports/raw`)
+Returns plain text `true` or `false` based on `isValid`. Perfect for quick one-line checks in your dashboard code:
+```bash
+curl http://localhost:3000/iqbal-sports/raw
+# Output: true
+```
+
+---
+
+### 4. Dynamic Client Route (`/client/:slug`)
+Allows you to query any client registered in `licenses.js`:
+```bash
+curl http://localhost:3000/client/iqbal-sports
+curl http://localhost:3000/client/default
+```
+
+---
+
+### 5. Health Check / Ping (`/health`)
+Used by uptime monitors (e.g. UptimeRobot) to keep free hosts awake 24/7:
+```json
+{
+  "status": "ok",
+  "uptimeSeconds": 120,
+  "timestamp": "2026-10-01T05:25:00.000Z"
+}
+```
+
+---
+
+## ⚙️ How to Configure Licenses & Expiry Dates
+
+All client records live in **`licenses.js`**:
+
 ```javascript
-// Change this to true or false:
-const DEFAULT_IS_LICENSED = true; 
+// licenses.js
+const LICENSES = {
+  'iqbal-sports': {
+    clientName: 'Iqbal Sports',
+    licensed: true,             // 👈 Set to false to immediately deactivate
+    licenseKey: 'IQBAL-SPORTS-2026-PRO-9811',
+    plan: 'Pro Enterprise Annual',
+    issuedDate: '2026-01-01',   // YYYY-MM-DD
+    expiryDate: '2027-01-01',   // YYYY-MM-DD (auto-calculates daysRemaining & isValid)
+    features: [
+      'live_score_sync',
+      'tournament_management',
+      'commentary_feed',
+      'player_profiles',
+      'admin_dashboard_access'
+    ],
+    allowedDomains: ['*'],
+    contactSupport: 'support@iqbalsports.com'
+  }
+};
 ```
 
-### Method 2: Via Environment Variable (Recommended for Cloud Hosting)
-In your hosting dashboard (e.g. Render, Vercel, Koyeb) or in your `.env` file, set:
-```env
-IS_LICENSED=true
-```
-*(or `IS_LICENSED=false` to deactivate)*
-
-No code redeployment is needed when changing environment variables in cloud dashboards!
+### 🧠 How `isValid` is Calculated Automatically
+1. **Killswitch Check**: If `licensed: false`, `isValid` is immediately `false` and status is `'REVOKED'`.
+2. **Date Check**: If current server date passes `expiryDate`, `isValid` automatically switches to `false`, `daysRemaining` becomes `0`, and status becomes `'EXPIRED'`.
+3. **Active Check**: If `licensed: true` and the expiry date has not passed, `isValid` is `true` and status is `'ACTIVE'`.
 
 ---
 
-## 💻 Local Development
+## 🌐 24/7 Free Hosting Setup
 
-### 1. Install dependencies
-```bash
-npm install
-```
-
-### 2. Start the server
-```bash
-npm start
-```
-Or for auto-reloading on changes:
-```bash
-npm run dev
-```
-
-### 3. Test the endpoints
-Open your browser or run in terminal:
-```bash
-curl http://localhost:3000/license
-```
-
----
-
-## 🌐 Where to Host for FREE (Active 24/7)
-
-Here are the best free hosting solutions that stay active all the time:
-
----
-
-### Option 1: Vercel (Recommended - Zero Sleep, Always Active)
-Vercel is serverless, meaning **it never sleeps or goes inactive**, responds instantly worldwide, and has a generous free tier (100k requests/day).
-
-1. Push this project to a GitHub repository:
+### Option 1: Vercel (Recommended — Never Sleeps, Free Forever)
+1. Push this repository to GitHub:
    ```bash
-   git init
    git add .
-   git commit -m "Initial commit"
-   # push to your GitHub repo
+   git commit -m "update: add multi-client license support"
+   git push origin main
    ```
-2. Go to [vercel.com](https://vercel.com) and click **"Add New"** > **"Project"**.
-3. Import your GitHub repository.
-4. Click **Deploy**.
-5. Once deployed, your API is live at `https://your-project.vercel.app/license`.
-6. To toggle license without editing code:
-   - Go to your Vercel Project > **Settings** > **Environment Variables**.
-   - Add `IS_LICENSED` with value `true` or `false`.
-   - Redeploy or trigger deploy to apply.
-
----
+2. Go to [vercel.com](https://vercel.com) > **"Add New"** > **"Project"** > Import repo > Click **Deploy**.
+3. Your endpoints are immediately active 24/7 with zero sleeping:
+   - `https://your-domain.vercel.app/`
+   - `https://your-domain.vercel.app/iqbal-sports`
+   - `https://your-domain.vercel.app/iqbal-sports/raw`
 
 ### Option 2: Render.com + UptimeRobot (Free 24/7 Keep-Alive Trick)
-Render provides free Node.js Web Services, but spins down after 15 minutes of inactivity on the free tier. You can keep it **active 24/7** using a free pinging service!
-
-1. Create a free account at [render.com](https://render.com).
-2. Click **New +** > **Web Service**.
-3. Connect your GitHub repository.
-4. Settings:
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node server.js`
-   - **Instance Type**: `Free`
-5. Click **Create Web Service**. You will get a URL like `https://cric-auth.onrender.com`.
-
-#### 💡 The 24/7 Keep-Alive Trick:
-1. Go to [uptimerobot.com](https://uptimerobot.com) (or [cron-job.org](https://cron-job.org)) and create a free account.
-2. Click **Add New Monitor**:
-   - **Monitor Type**: `HTTP(s)`
-   - **Friendly Name**: `Cric Authenticator KeepAlive`
-   - **URL**: `https://your-service.onrender.com/health`
-   - **Monitoring Interval**: `Every 5 minutes`
-3. Save the monitor. UptimeRobot will ping `/health` every 5 minutes, preventing Render from ever going to sleep!
-
----
-
-### Option 3: Koyeb (Free Eco Tier - Always Online)
-Koyeb provides 1 free Eco Web service that runs 24/7 without sleeping.
-
-1. Go to [koyeb.com](https://koyeb.com) and create an account.
-2. Create an App > Select **GitHub** > Choose your repo.
-3. Build type: **Buildpack** (Node.js).
-4. Deploy! It will remain online 24/7 on Koyeb's global infrastructure.
+1. Deploy on [render.com](https://render.com) as a free Web Service.
+2. In [uptimerobot.com](https://uptimerobot.com), create a free HTTP monitor pointing to `https://your-app.onrender.com/health` running every 5 minutes.
+3. This keeps your Render instance awake 24/7 for free!
