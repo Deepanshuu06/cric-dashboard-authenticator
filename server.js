@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { LICENSES, DEVELOPER_CONTACT, evaluateLicense } = require('./licenses');
+const { LICENSES, evaluateLicense } = require('./licenses');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +16,7 @@ app.use(express.json());
 
 /**
  * 1. Default Route: /
- * Returns normal service data, registered client routes, and developer contact.
+ * Returns normal service data and registered client routes.
  */
 app.get('/', (req, res) => {
   res.json({
@@ -31,17 +31,9 @@ app.get('/', (req, res) => {
       url: `/${slug}`,
       rawUrl: `/${slug}/raw`
     })),
-    contactDeveloper: DEVELOPER_CONTACT,
+    contact: 'contact to developer',
     healthCheck: '/health'
   });
-});
-
-/**
- * Dedicated Route: /developer
- * Returns direct contact info for the developer
- */
-app.get('/developer', (req, res) => {
-  res.json(DEVELOPER_CONTACT);
 });
 
 /**
