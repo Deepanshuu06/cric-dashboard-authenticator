@@ -5,6 +5,20 @@
  * or toggle `licensed: true / false`.
  */
 
+// ==============================================================================
+// 👨‍💻 DEVELOPER CONTACT
+// This is the sole contact returned across all license endpoints.
+// You can edit details directly here or set environment variables.
+// ==============================================================================
+const DEVELOPER_CONTACT = {
+  name: 'Developer Support',
+  email: process.env.DEVELOPER_EMAIL || 'developer@example.com',
+  phone: process.env.DEVELOPER_PHONE || '+91 98765 43210',
+  whatsapp: process.env.DEVELOPER_WHATSAPP || '+91 98765 43210',
+  telegram: process.env.DEVELOPER_TELEGRAM || '@cric_dashboard_dev',
+  message: 'For license renewal, key activation, or issues, please contact the developer directly.'
+};
+
 const LICENSES = {
   // Client: Iqbal Sports
   'iqbal-sports': {
@@ -22,12 +36,7 @@ const LICENSES = {
       'team_rankings',
       'admin_dashboard_access'
     ],
-    allowedDomains: ['*'],
-    contactSupport: {
-      email: 'support@iqbalsports.com',
-      phone: '+91 98765 43210',
-      whatsapp: '+91 98765 43210'
-    }
+    allowedDomains: ['*']
   },
 
   // Client: CricTalks
@@ -45,8 +54,7 @@ const LICENSES = {
       'social_sharing',
       'admin_dashboard_access'
     ],
-    allowedDomains: ['*'],
-    contactSupport: 'support@crictalks.com'
+    allowedDomains: ['*']
   },
 
   // Client: OpenPath
@@ -64,8 +72,7 @@ const LICENSES = {
       'tournament_brackets',
       'admin_dashboard_access'
     ],
-    allowedDomains: ['*'],
-    contactSupport: 'support@openpath.com'
+    allowedDomains: ['*']
   },
 
   // Default / Demo license
@@ -81,8 +88,7 @@ const LICENSES = {
       'player_profiles',
       'admin_dashboard_access'
     ],
-    allowedDomains: ['*'],
-    contactSupport: 'support@example.com'
+    allowedDomains: ['*']
   }
 };
 
@@ -139,13 +145,13 @@ function evaluateLicense(clientKey) {
     daysRemaining: isExpired ? 0 : daysRemaining,
     features: license.features,
     allowedDomains: license.allowedDomains,
-    contactSupport: license.contactSupport,
-    supportContact: license.contactSupport,
+    contactDeveloper: DEVELOPER_CONTACT,
     checkedAt: now.toISOString()
   };
 }
 
 module.exports = {
   LICENSES,
+  DEVELOPER_CONTACT,
   evaluateLicense
 };

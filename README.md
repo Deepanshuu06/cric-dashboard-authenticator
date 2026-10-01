@@ -67,7 +67,14 @@ curl http://localhost:3000/iqbal-sports
   "allowedDomains": [
     "*"
   ],
-  "supportContact": "support@iqbalsports.com",
+  "contactDeveloper": {
+    "name": "Developer Support",
+    "email": "developer@example.com",
+    "phone": "+91 98765 43210",
+    "whatsapp": "+91 98765 43210",
+    "telegram": "@cric_dashboard_dev",
+    "message": "For license renewal, key activation, or issues, please contact the developer directly."
+  },
   "checkedAt": "2026-10-01T05:25:00.000Z"
 }
 ```
@@ -142,8 +149,7 @@ const LICENSES = {
       'player_profiles',
       'admin_dashboard_access'
     ],
-    allowedDomains: ['*'],
-    contactSupport: 'support@iqbalsports.com'
+    allowedDomains: ['*']
   }
 };
 ```
