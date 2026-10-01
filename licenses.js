@@ -23,6 +23,11 @@ const LICENSES = {
       'admin_dashboard_access'
     ],
     allowedDomains: ['*'],
+    contactSupport: {
+      email: 'support@iqbalsports.com',
+      phone: '+91 98765 43210',
+      whatsapp: '+91 98765 43210'
+    }
   },
 
   // Client: CricTalks
@@ -134,6 +139,7 @@ function evaluateLicense(clientKey) {
     daysRemaining: isExpired ? 0 : daysRemaining,
     features: license.features,
     allowedDomains: license.allowedDomains,
+    contactSupport: license.contactSupport,
     supportContact: license.contactSupport,
     checkedAt: now.toISOString()
   };
